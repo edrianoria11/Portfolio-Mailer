@@ -1,9 +1,8 @@
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
-from flask_mail import Message, Mail
 from flask_cors import CORS
 from dotenv import load_dotenv
-from threading import Thread
+import resend
 import os
 import traceback
 
@@ -14,24 +13,12 @@ CORS(app)
 
 API_KEY = os.getenv("API_KEY")
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_EMAIL')
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-app.config['MAIL_DEFAULT_SENDER'] = ('Edrian Oria', os.getenv('MAIL_EMAIL'))
-
-mail = Mail(app)
-
 email_args = reqparse.RequestParser()
 email_args.add_argument('email', type=str, required=True, help="Email cannot be blank")
 email_args.add_argument('subject', type=str, required=True, help="Subject cannot be blank")
 email_args.add_argument('message', type=str, required=True, help="Message cannot be blank")
 
-def send_async_email(app, message):
-    with app.app_context():
-        mail.send(message)
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 class Email(Resource):
     def post(self):
@@ -43,20 +30,22 @@ class Email(Resource):
         args = email_args.parse_args()
         link = os.getenv('PORTFOLIO_LINK')
         try:
-            message_format = f"""
-            <p>{args["message"]}</p><br><br>
-            <p><strong>Thank you for connecting with me.</strong></p><br>
-            <p>Here is the link to my portfolio website: <br>
-            <a href="{link}">{link}</a></p>
-            """
 
-            message = Message(args["subject"], recipients=[args["email"]])
-            message.html = message_format
+            params = {
+                "from": os.getenv('MAIL_EMAIL'),
+                "to": [args["email"]],
+                "subject": args["subject"],
+                "html": f"""
+                         <p>{args["message"]}</p><br><br>
+                         <p><strong>Thank you for connecting with me.</strong></p><br>
+                         <p>Here is the link to my portfolio website: <br>
+                         <a href="{link}">{link}</a></p>
+                        """
+            }
 
-            thread = Thread(target=send_async_email, args=(app, message))
-            thread.start()
+            r = resend.Emails.send(params)
 
-            return {"message": "Email is being send"}, 201
+            return {"message": "Email sent successfully!"}, 201
         except Exception as e:
             print("Email sending error:", e)
             traceback.print_exc()
