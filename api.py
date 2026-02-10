@@ -4,6 +4,7 @@ from flask_mail import Message, Mail
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import traceback
 
 load_dotenv()
 app = Flask(__name__)
@@ -49,8 +50,10 @@ class Email(Resource):
             mail.send(message)
 
             return {"message": "Email sent successfully"}, 201
-        except:
-            return {"error": "Failed to send email"}, 400
+        except Exception as e:
+            print("Email sending error:", e)
+            traceback.print_exc()
+            return {"error": str(e)}, 500
 
 api.add_resource(Email, '/api/email/')
 
