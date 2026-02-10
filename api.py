@@ -1,12 +1,14 @@
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 from flask_mail import Message, Mail
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 API_KEY = os.getenv("API_KEY")
 
