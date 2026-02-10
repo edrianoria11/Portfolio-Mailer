@@ -5,14 +5,15 @@ colorama==0.4.6
 Flask==3.1.2
 Flask-Mail==0.10.0
 Flask-RESTful==0.3.10
+gunicorn==25.0.3
 h11==0.16.0
 h2==4.3.0
 hpack==4.1.0
-Hypercorn==0.18.0
 hyperframe==6.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
+packaging==26.0
 priority==2.0.0
 python-dotenv==1.2.1
 pytz==2025.2
